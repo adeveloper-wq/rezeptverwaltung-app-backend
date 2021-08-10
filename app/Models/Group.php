@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model{
     protected $table = 'gruppen';
-    protected $primaryKey = 'G_ID';
+    protected $primaryKey = 'name';
     public $timestamps = false;
 
     /**
