@@ -6,30 +6,32 @@ use App\Models\Membership;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller{
+    public function __construct() {
+        $this->middleware('auth:api');         
+    }
+
+
     public function index(){
-        $this->middleware('auth:api');
         $groups = Group::all();
 
         if($groups){
             return response()->json($groups, 200);
         }else{
-            return response()->json("Can't get groups.", 500);
+            return response()->json("Can't get groups.", 404);
         }
     }
 
     public function get($name){
-        $this->middleware('auth:api');
-        $group = Group::find($name);
+        $group = Group::where('name', '=', $name)->first();;
 
         if($group){
             return response()->json($group, 200);
         }else{
-            return response()->json("Can't get group.", 500);
+            return response()->json("Can't get group.", 404);
         }
     }
 
     public function create(Request $request){
-        $this->middleware('auth:api');
         $group = new Group();
 
         $group->passwort    = $request->passwort;
@@ -46,7 +48,6 @@ class GroupController extends Controller{
     }
 
     public function update(Request $request, $G_ID){
-        $this->middleware('auth:api');
         $group = Group::find($G_ID);
 
         $group->passwort    = $request->passwort;
@@ -62,7 +63,6 @@ class GroupController extends Controller{
     }
 
     public function delete($G_ID){
-        $this->middleware('auth:api');
         $group = Group::find($G_ID);
         $check = $group->delete();
 
@@ -74,7 +74,6 @@ class GroupController extends Controller{
     }
 
     public function join(Request $request){
-        $this->middleware('auth:api');
         $membership = new Membership();
 
         $membership->P_ID    = $request->P_ID;
