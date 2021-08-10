@@ -25,7 +25,7 @@ class AuthController extends Controller
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'passwort' => Hash::make($request->passwort),
+            'password' => Hash::make($request->password),
          ]);
  
         $token = Auth::login($user);
@@ -40,9 +40,9 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        //$credentials2 = $request->only(['email', 'passwort']);
+        //$credentials2 = $request->only(['email', 'password']);
         $credentials['email'] = $request['email'];
-        $credentials['password'] = $request['passwort'];
+        $credentials['password'] = $request['password'];
         if (! $token = Auth::attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
