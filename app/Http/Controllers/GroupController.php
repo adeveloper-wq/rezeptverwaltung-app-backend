@@ -23,6 +23,7 @@ class GroupController extends Controller{
     }
 
     public function get($name){
+        $name = str_replace('+', ' ', $name);
         $group = Group::where('name', '=', $name)->first();;
 
         if($group){
@@ -42,10 +43,24 @@ class GroupController extends Controller{
 
         $group = new Group();
 
+        $HG_Bildpfad = '';
+
+        if($request->HG_Bildpfad){
+            $HG_Bildpfad = $request->HG_Bildpfad;
+        }
+
+        $menüfarbe = '';
+
+        if($request->menüfarbe){
+            $HG_Bildpfad = $request->menüfarbe;
+        }
+
         $group->passwort    = Hash::make($request->passwort);
         $group->hinweis     = $request->hinweis;
         $group->admin_P_ID  = $request->admin_P_ID;
         $group->name        = $request->name;
+        $group->HG_Bildpfad = $HG_Bildpfad;
+        $group->menüfarbe   = $menüfarbe;
 
         $checkGroupCreated = $group->save();
 
@@ -88,11 +103,9 @@ class GroupController extends Controller{
 
         if($group){
             $this->validate($request, [
-                'passwort' => 'required',
                 'hinweis' => 'required'
             ]);
 
-            $group->passwort    = Hash::make($request->passwort);
             $group->hinweis     = $request->hinweis;
 
             $check = $group->save();
@@ -112,6 +125,9 @@ class GroupController extends Controller{
 
         if($group){
             $check = $group->delete();
+
+            $memberships = Membership::where('G_ID', '=', $G_ID);
+            $memberships->delete();
 
             if($check){
                 return response()->json('Group Successfully Deleted!', 200);
