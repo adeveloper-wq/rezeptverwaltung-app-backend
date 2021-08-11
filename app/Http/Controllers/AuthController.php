@@ -22,14 +22,20 @@ class AuthController extends Controller
  
     public function register(Request $request)
     {
+        $this->validate($request, [
+            'name' => 'required',
+            'email' => 'required|email|unique:personen',
+            'password' => 'required'
+        ]);
+
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-         ]);
- 
+            ]);
+    
         $token = Auth::login($user);
- 
+    
         return $this->respondWithToken($token);
     }
 
@@ -40,7 +46,11 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        //$credentials2 = $request->only(['email', 'password']);
+        $this->validate($request, [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
         $credentials['email'] = $request['email'];
         $credentials['password'] = $request['password'];
         if (! $token = Auth::attempt($credentials)) {
