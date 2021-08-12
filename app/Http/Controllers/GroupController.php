@@ -5,6 +5,7 @@ use App\Models\Group;
 use App\Models\Membership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller{
     public function __construct() {
@@ -102,18 +103,22 @@ class GroupController extends Controller{
         $group = Group::find($G_ID);
 
         if($group){
-            $this->validate($request, [
-                'hinweis' => 'required'
-            ]);
-
-            $group->hinweis     = $request->hinweis;
-
-            $check = $group->save();
-
-            if($check){
-                return response()->json($group, 200);
+            if(Auth::user()->P_ID == $group->admin_P_ID){
+                $this->validate($request, [
+                    'hinweis' => 'required'
+                ]);
+    
+                $group->hinweis     = $request->hinweis;
+    
+                $check = $group->save();
+    
+                if($check){
+                    return response()->json($group, 200);
+                }else{
+                    return response()->json('Updating the group failed!', 500);
+                }
             }else{
-                return response()->json('Updating the group failed!', 500);
+                return response()->json("Not authorized to update the group.", 401);
             }
         }else{
             return response()->json("Group doesn't exist.", 404);
@@ -124,15 +129,19 @@ class GroupController extends Controller{
         $group = Group::find($G_ID);
 
         if($group){
-            $check = $group->delete();
+            if(Auth::user()->P_ID == $group->admin_P_ID){
+                $check = $group->delete();
 
-            $memberships = Membership::where('G_ID', '=', $G_ID);
-            $memberships->delete();
-
-            if($check){
-                return response()->json('Group Successfully Deleted!', 200);
+                $memberships = Membership::where('G_ID', '=', $G_ID);
+                $memberships->delete();
+    
+                if($check){
+                    return response()->json('Group Successfully Deleted!', 200);
+                }else{
+                    return response()->json('Deleting the group failed!', 500);
+                }
             }else{
-                return response()->json('Deleting the group failed!', 500);
+                return response()->json("Not authorized to delete the group.", 401);
             }
         }else{
             return response()->json("Group doesn't exist.", 404);
@@ -142,20 +151,34 @@ class GroupController extends Controller{
     public function join(Request $request){
         $this->validate($request, [
             'P_ID' => 'required',
-            'G_ID' => 'required'
+            'G_ID' => 'required',
+            'passwort' => 'required'
         ]);
 
-        $membership = new Membership();
-
-        $membership->P_ID    = $request->P_ID;
-        $membership->G_ID    = $request->G_ID;
-
-        $check = $membership->save();
-
-        if($check){
-            return response()->json('Group successfully joined!', 200);
+        if(Auth::user()->P_ID == $request->P_ID){
+            $group = Group::find($request->G_ID);
+            if($group){
+                if(Hash::make($request->passwort) == $group->passwort){
+                    $membership = new Membership();
+    
+                    $membership->P_ID    = $request->P_ID;
+                    $membership->G_ID    = $request->G_ID;
+    
+                    $check = $membership->save();
+    
+                    if($check){
+                        return response()->json('Group successfully joined!', 200);
+                    }else{
+                        return response()->json('Joining the group failed!', 500);
+                    }
+                }else{
+                    return response()->json("Wrong password.", 401);
+                }
+            }else{
+                return response()->json("Group doesn't exist.", 404);
+            }
         }else{
-            return response()->json('Joining the group failed!', 500);
+            return response()->json("Trying to add a non-authicated user to a group.", 401);
         }
     }
 }
