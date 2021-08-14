@@ -38,7 +38,6 @@ class GroupController extends Controller{
         $this->validate($request, [
             'passwort' => 'required',
             'hinweis' => 'required',
-            'admin_P_ID' => 'required',
             'name' => 'required|unique:gruppen'
         ]);
 
@@ -58,7 +57,7 @@ class GroupController extends Controller{
 
         $group->passwort    = Hash::make($request->passwort);
         $group->hinweis     = $request->hinweis;
-        $group->admin_P_ID  = $request->admin_P_ID;
+        $group->admin_P_ID  = Auth::user()->P_ID;
         $group->name        = $request->name;
         $group->HG_Bildpfad = $HG_Bildpfad;
         $group->menüfarbe   = $menüfarbe;
@@ -68,12 +67,12 @@ class GroupController extends Controller{
         if($checkGroupCreated){
             $group = Group::where('name', '=', $request->name)
                             ->where('hinweis', '=', $request->hinweis)
-                            ->where('admin_P_ID', '=', $request->admin_P_ID)->first();
+                            ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
 
             if($group->G_ID){
                 $membership = new Membership();
 
-                $membership->P_ID    = $request->admin_P_ID;
+                $membership->P_ID    = Auth::user()->P_ID;
                 $membership->G_ID    = $group->G_ID;
     
                 $checkMembership = $membership->save();
@@ -83,14 +82,14 @@ class GroupController extends Controller{
                 }else{
                     $group = Group::where('name', '=', $request->name)
                                     ->where('hinweis', '=', $request->hinweis)
-                                    ->where('admin_P_ID', '=', $request->admin_P_ID)->first();
+                                    ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
                     $group->delete();
                     return response()->json("Creating the group failed!", 500);
                 }
             }else{
                 $group = Group::where('name', '=', $request->name)
                             ->where('hinweis', '=', $request->hinweis)
-                            ->where('admin_P_ID', '=', $request->admin_P_ID)->first();
+                            ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
                 $group->delete();
                 return response()->json("Creating the group failed!", 500);
             }
