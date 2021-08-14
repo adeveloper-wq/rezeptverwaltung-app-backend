@@ -36,7 +36,7 @@ class GroupController extends Controller{
 
     public function create(Request $request){
         $this->validate($request, [
-            'passwort' => 'required',
+            'password' => 'required',
             'hinweis' => 'required',
             'name' => 'required|unique:gruppen'
         ], ['name.unique' => 'Der Name ist schon vergeben.']);
@@ -55,7 +55,7 @@ class GroupController extends Controller{
             $HG_Bildpfad = $request->menüfarbe;
         }
 
-        $group->passwort    = Hash::make($request->passwort);
+        $group->passwort    = Hash::make($request->password);
         $group->hinweis     = $request->hinweis;
         $group->admin_P_ID  = Auth::user()->P_ID;
         $group->name        = $request->name;
@@ -150,12 +150,12 @@ class GroupController extends Controller{
     public function join(Request $request){
         $this->validate($request, [
             'G_ID' => 'required',
-            'passwort' => 'required'
+            'password' => 'required'
         ]);
 
         $group = Group::find($request->G_ID);
         if($group){
-            if(Hash::make($request->passwort) == $group->passwort){
+            if(Hash::make($request->password) == $group->passwort){
                 $membership = new Membership();
 
                 $membership->P_ID    = Auth::user()->P_ID;
