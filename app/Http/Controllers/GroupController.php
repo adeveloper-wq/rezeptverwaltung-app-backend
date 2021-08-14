@@ -149,35 +149,30 @@ class GroupController extends Controller{
 
     public function join(Request $request){
         $this->validate($request, [
-            'P_ID' => 'required',
             'G_ID' => 'required',
             'passwort' => 'required'
         ]);
 
-        if(Auth::user()->P_ID == $request->P_ID){
-            $group = Group::find($request->G_ID);
-            if($group){
-                if(Hash::make($request->passwort) == $group->passwort){
-                    $membership = new Membership();
-    
-                    $membership->P_ID    = $request->P_ID;
-                    $membership->G_ID    = $request->G_ID;
-    
-                    $check = $membership->save();
-    
-                    if($check){
-                        return response()->json('Gruppe erfolgreich beigetreten!', 200);
-                    }else{
-                        return response()->json('Der Gruppe konnte nicht beigetreten werden!', 500);
-                    }
+        $group = Group::find($request->G_ID);
+        if($group){
+            if(Hash::make($request->passwort) == $group->passwort){
+                $membership = new Membership();
+
+                $membership->P_ID    = Auth::user()->P_ID;
+                $membership->G_ID    = $request->G_ID;
+
+                $check = $membership->save();
+
+                if($check){
+                    return response()->json('Gruppe erfolgreich beigetreten!', 200);
                 }else{
-                    return response()->json("Falsches Passwort.", 401);
+                    return response()->json('Der Gruppe konnte nicht beigetreten werden!', 500);
                 }
             }else{
-                return response()->json("Die Gruppe existiert nicht.", 404);
+                return response()->json("Falsches Passwort.", 401);
             }
         }else{
-            return response()->json("Man kann nicht andere Nutzer:innen außer sich selber zu Gruppen hinzufügen.", 401);
+            return response()->json("Die Gruppe existiert nicht.", 404);
         }
     }
 }
