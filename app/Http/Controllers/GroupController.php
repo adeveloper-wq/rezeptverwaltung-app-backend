@@ -155,7 +155,7 @@ class GroupController extends Controller{
 
         $group = Group::find($request->G_ID);
         if($group){
-            if(Hash::make($request->password) == $group->passwort){
+            if(Hash::check($request->password, $group->passwort)){
                 $membership = new Membership();
 
                 $membership->P_ID    = Auth::user()->P_ID;
