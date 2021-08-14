@@ -26,7 +26,7 @@ class AuthController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:personen',
             'password' => 'required'
-        ]);
+        ], ['email.unique' => 'Zu der E-Mail existiert schon ein Account.']);
 
         $user = User::create([
             'name'     => $request->name,
@@ -54,7 +54,7 @@ class AuthController extends Controller
         $credentials['email'] = $request['email'];
         $credentials['password'] = $request['password'];
         if (! $token = Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Falsche Zugangsdaten.'], 401);
         }
  
         return $this->respondWithToken($token);
@@ -79,7 +79,7 @@ class AuthController extends Controller
     {
         Auth::logout();
  
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Erfolgreich abgemeldet']);
     }
  
     /**

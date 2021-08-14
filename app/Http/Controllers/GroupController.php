@@ -19,7 +19,7 @@ class GroupController extends Controller{
         if($groups){
             return response()->json($groups, 200);
         }else{
-            return response()->json("Can't get groups.", 404);
+            return response()->json("Gruppen können nicht geladen werden.", 500);
         }
     }
 
@@ -30,7 +30,7 @@ class GroupController extends Controller{
         if($group){
             return response()->json($group, 200);
         }else{
-            return response()->json("Group doesn't exist.", 404);
+            return response()->json("Gruppe existiert nicht.", 404);
         }
     }
 
@@ -39,7 +39,7 @@ class GroupController extends Controller{
             'passwort' => 'required',
             'hinweis' => 'required',
             'name' => 'required|unique:gruppen'
-        ]);
+        ], ['name.unique' => 'Der Name ist schon vergeben.']);
 
         $group = new Group();
 
@@ -78,23 +78,23 @@ class GroupController extends Controller{
                 $checkMembership = $membership->save();
 
                 if($checkMembership){
-                    return response()->json("Group Successfully Created!", 200);
+                    return response()->json("Gruppe erfolgreich erstellt!", 200);
                 }else{
                     $group = Group::where('name', '=', $request->name)
                                     ->where('hinweis', '=', $request->hinweis)
                                     ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
                     $group->delete();
-                    return response()->json("Creating the group failed!", 500);
+                    return response()->json("Gruppe konnte nicht erstellt werden! (Beitritt in neue Gruppe fehlgeschlagen)", 500);
                 }
             }else{
                 $group = Group::where('name', '=', $request->name)
                             ->where('hinweis', '=', $request->hinweis)
                             ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
                 $group->delete();
-                return response()->json("Creating the group failed!", 500);
+                return response()->json("Gruppe konnte nicht erstellt werden! (Fehler bei Erstellung)", 500);
             }
         }else{
-            return response()->json("Creating the group failed!", 500);
+            return response()->json("Gruppe konnte nicht erstellt werden! (Fehler bei Erstellung)", 500);
         }
     }
 
@@ -114,13 +114,13 @@ class GroupController extends Controller{
                 if($check){
                     return response()->json($group, 200);
                 }else{
-                    return response()->json('Updating the group failed!', 500);
+                    return response()->json('Aktualisieren der Gruppe fehlgeschlagen', 500);
                 }
             }else{
-                return response()->json("Not authorized to update the group.", 401);
+                return response()->json("Nur Admins können die Gruppe bearbeiten.", 401);
             }
         }else{
-            return response()->json("Group doesn't exist.", 404);
+            return response()->json("Die Gruppe existiert nicht.", 404);
         }
     }
 
@@ -135,15 +135,15 @@ class GroupController extends Controller{
                 $memberships->delete();
     
                 if($check){
-                    return response()->json('Group Successfully Deleted!', 200);
+                    return response()->json('Gruppe erfolgreich gelöscht!', 200);
                 }else{
-                    return response()->json('Deleting the group failed!', 500);
+                    return response()->json('Löschen der Gruppe fehlgeschlagen!', 500);
                 }
             }else{
-                return response()->json("Not authorized to delete the group.", 401);
+                return response()->json("Nur Admins können die Gruppe löschen.", 401);
             }
         }else{
-            return response()->json("Group doesn't exist.", 404);
+            return response()->json("Die Gruppe existiert nicht.", 404);
         }
     }
 
@@ -166,18 +166,18 @@ class GroupController extends Controller{
                     $check = $membership->save();
     
                     if($check){
-                        return response()->json('Group successfully joined!', 200);
+                        return response()->json('Gruppe erfolgreich beigetreten!', 200);
                     }else{
-                        return response()->json('Joining the group failed!', 500);
+                        return response()->json('Der Gruppe konnte nicht beigetreten werden!', 500);
                     }
                 }else{
-                    return response()->json("Wrong password.", 401);
+                    return response()->json("Falsches Passwort.", 401);
                 }
             }else{
-                return response()->json("Group doesn't exist.", 404);
+                return response()->json("Die Gruppe existiert nicht.", 404);
             }
         }else{
-            return response()->json("Trying to add a non-authicated user to a group.", 401);
+            return response()->json("Man kann nicht andere Nutzer:innen außer sich selber zu Gruppen hinzufügen.", 401);
         }
     }
 }
