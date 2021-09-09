@@ -14,18 +14,26 @@ class GroupController extends Controller{
 
 
     public function index(){
-        $groups = Group::all();
+        $memberships = Membership::where('P_ID', '=', Auth::user()->P_ID)->get();
 
-        if($groups){
-            return response()->json($groups, 200);
+        if($memberships){
+            $groups = array();
+            foreach ($memberships as &$membership) {
+                array_push($groups, Group::where('G_ID', '=', $membership->G_ID)->first());
+            }
+            if(count($groups) > 0){
+                return response()->json($groups, 200);
+            }else{
+                return response()->json("Fehler beim Laden der Gruppen.", 500);
+            }
         }else{
-            return response()->json("Gruppen können nicht geladen werden.", 500);
+            return response()->json("Noch keinen Gruppen beigetreten.", 404);
         }
     }
 
     public function get($name){
         $name = str_replace('+', ' ', $name);
-        $group = Group::where('name', '=', $name)->first();;
+        $group = Group::where('name', '=', $name)->first();
 
         if($group){
             return response()->json($group, 200);
