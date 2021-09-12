@@ -26,6 +26,7 @@ $router->group(['prefix'=>'api'], function() use($router){
     $router->put('/group/{G_ID}', 'GroupController@update');
     $router->delete('/group/{G_ID}', 'GroupController@delete');
     $router->post('/group/join', 'GroupController@join');
+    $router->get('/receipt', 'ReceiptController@get');
 });
 
 $router->group([
