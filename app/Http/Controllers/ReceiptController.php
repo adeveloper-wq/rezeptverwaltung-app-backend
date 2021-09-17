@@ -7,6 +7,7 @@ use App\Models\IngredientName;
 use App\Models\Receipt;
 use App\Models\Membership;
 use App\Models\Steps;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -72,11 +73,14 @@ class ReceiptController extends Controller{
     public function getIngredientNames(Request $request){
         $this->validate($request, [
             'Z_IDs' => 'required|array|min:1',
-            'Z_IDs.*' => 'required|integer|distinct'
+            'Z_IDs.*' => 'required|string|distinct'
         ]);
 
         $names = array();
-        foreach ($request->Z_IDs as &$Z_ID) {
+
+        $Z_IDs = $request->Z_IDs;
+
+        foreach ($Z_IDs as &$Z_ID) {
             array_push($names, IngredientName::where('Z_ID', '=', $Z_ID)->first());
         }
 
@@ -90,12 +94,15 @@ class ReceiptController extends Controller{
     public function getUnitNames(Request $request){
         $this->validate($request, [
             'E_IDs' => 'required|array|min:1',
-            'E_IDs.*' => 'required|integer|distinct'
+            'E_IDs.*' => 'required|string|distinct'
         ]);
 
         $names = array();
-        foreach ($request->E_IDs as &$E_ID) {
-            array_push($names, IngredientName::where('E_ID', '=', $E_ID)->first());
+
+        $E_IDs = $request->E_IDs;
+
+        foreach ($E_IDs as &$E_ID) {
+            array_push($names, Unit::where('E_ID', '=', $E_ID)->first());
         }
 
         if($names && count($names) > 0){
