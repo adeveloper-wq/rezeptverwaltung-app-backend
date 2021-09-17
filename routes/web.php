@@ -28,6 +28,9 @@ $router->group(['prefix'=>'api'], function() use($router){
     $router->post('/group/join', 'GroupController@join');
     $router->get('/receipt', 'ReceiptController@get');
     $router->get('/receipt/steps', 'ReceiptController@getSteps');
+    $router->get('/receipt/ingredients', 'ReceiptController@getIngredients');
+    $router->get('/receipt/ingredients/names', 'ReceiptController@getIngredientNames');
+    $router->get('/receipt/units', 'ReceiptController@getUnitNames');
 });
 
 $router->group([
