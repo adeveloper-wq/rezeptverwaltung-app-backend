@@ -31,6 +31,9 @@ $router->group(['prefix'=>'api'], function() use($router){
     $router->get('/receipt/ingredient', 'ReceiptController@getIngredients');
     $router->get('/receipt/ingredient/names', 'ReceiptController@getIngredientNames');
     $router->get('/receipt/unit', 'ReceiptController@getUnitNames');
+
+    $router->get('/files/{path}', 'FilesController@get');
+    $router->post('/files', 'FilesController@upload');
 });
 
 $router->group([
