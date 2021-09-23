@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Steps extends Model{
-    protected $table = 'schritte';
-    protected $primaryKey = 'S_ID';
+class Tag extends Model{
+    protected $table = 'tag';
+    protected $primaryKey = 'T_ID';
     public $timestamps = false;
 
     /**
@@ -15,7 +15,7 @@ class Steps extends Model{
      * @var array
      */
     protected $fillable = [
-        'schritt_nr', 'anweisung'
+        'name'
     ];
  
     /**
@@ -23,9 +23,9 @@ class Steps extends Model{
      *
      * @var array
      */
-    protected $hidden = [
-        'S_ID', 'R_ID'
-    ];
+    /* protected $hidden = [
+        'E_ID'
+    ]; */
 
     protected $guarded = [];
 }

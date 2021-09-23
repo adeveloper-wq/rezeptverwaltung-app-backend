@@ -20,20 +20,29 @@ $router->get('/', function () use ($router) {
 $router->group(['prefix'=>'api'], function() use($router){
     $router->get('/items', 'ItemController@all');
     $router->get('/items/{id}', 'ItemController@get');
+
     $router->get('/group', 'GroupController@index');
     $router->get('/group/{name}', 'GroupController@get');
     $router->post('/group', 'GroupController@create');
     $router->put('/group/{G_ID}', 'GroupController@update');
     $router->delete('/group/{G_ID}', 'GroupController@delete');
     $router->post('/group/join', 'GroupController@join');
+
     $router->get('/receipt', 'ReceiptController@get');
+    $router->post('/receipt', 'ReceiptController@createReceipt');
+
     $router->get('/receipt/steps', 'ReceiptController@getSteps');
+
     $router->get('/receipt/ingredient', 'ReceiptController@getIngredients');
     $router->get('/receipt/ingredient/names', 'ReceiptController@getIngredientNames');
+
     $router->get('/receipt/unit', 'ReceiptController@getUnitNames');
+    $router->get('/unit', 'ReceiptController@getAllUnits');
 
     $router->get('/files/{path}', 'FilesController@get');
     $router->post('/files', 'FilesController@upload');
+
+    $router->get('/tag', 'ReceiptController@getAllTags');
 });
 
 $router->group([

@@ -6,7 +6,9 @@ use App\Models\Ingredient;
 use App\Models\IngredientName;
 use App\Models\Receipt;
 use App\Models\Membership;
-use App\Models\Steps;
+use App\Models\Step;
+use App\Models\Tag;
+use App\Models\ReceiptTag;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +36,86 @@ class ReceiptController extends Controller{
         }
     }
 
+    public function create(Request $request) {
+        $this->validate($request, [
+            'groupId' => 'required',
+            'name' => 'required',
+            'portions' => 'required',
+            'workingTime' => 'required',
+            'cookingTime' => 'required',
+            'restTime' => 'required',
+            'tagIds' => 'required|array',
+            'tagIds.*' => 'required|distinct',
+            'ingredients' => 'required',
+            'steps' => 'required'
+        ]);
+
+        if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $request->groupId]])->first()){
+            $receipt = new Receipt();
+
+            $receipt->titel = $request->name;
+            $receipt->portionen = $request->portions;
+            $receipt->arbeitszeit = $request->workingTime;
+            $receipt->kochzeit = $request->cookingTime;
+            $receipt->ruhezeit = $request->restTime;
+
+            $receipt->G_ID = $request->groupId;
+            $receipt->P_ID = $request->Auth::user()->P_ID;
+
+            $time = time();
+
+            $receipt->erstell_dat = $time;
+
+            $checkReceiptCreated = $receipt->save();
+
+            if($checkReceiptCreated){
+                $createdReceipt = Receipt::where('titel', '=', $request->name)
+                                ->where('G_ID', '=', $request->groupId)
+                                ->where('P_ID', '=', Auth::user()->P_ID)
+                                ->where('erstell_dat', '=', $time)->first();
+
+                if($createdReceipt->R_ID){
+                    $tagIds = $request->tagIds;
+
+                    foreach ($tagIds as &$tagId) {
+                        $tagReceipt = new ReceiptTag();
+
+                        $tagReceipt->R_ID = $createdReceipt->R_ID;
+                        $tagReceipt->R_ID = $tagId;
+
+                        $tagReceipt->save();
+                    }
+
+                    $jsonStringSteps = $receipt->steps;
+
+                    $decodedSteps = json_decode($jsonStringSteps, false);
+
+                    foreach ($decodedSteps as &$decodedStep) {
+                        $step = new Step();
+
+                        $step->R_ID = $createdReceipt->R_ID;
+                        $step->schritt_nr = $decodedStep->stepNumber;
+                        $step->anweisung = $decodedStep->instruction;
+
+                        $step->save();
+                    }
+
+                }else{
+                    $createdReceipt =   Receipt::where('titel', '=', $request->name)
+                                        ->where('G_ID', '=', $request->groupId)
+                                        ->where('P_ID', '=', Auth::user()->P_ID)
+                                        ->where('erstell_dat', '=', $time)->first();
+                    $createdReceipt->delete();
+                    return response()->json("Rezept konnte nicht erstellt werden! (Fehler bei Erstellung)", 500);
+                }
+            }else{
+                return response()->json("Rezept konnte nicht erstellt werden! (Fehler bei Erstellung)", 500);
+            }
+        }else{
+            return response()->json("Unauthorisiert.", 401);
+        }
+    }
+
     public function getSteps(Request $request){
         $this->validate($request, [
             'R_ID' => 'required'
@@ -41,7 +123,7 @@ class ReceiptController extends Controller{
 
         $receipt = Receipt::find($request->R_ID);
         if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $receipt->G_ID]])->first()){
-            $steps = Steps::where('R_ID', '=', $request->R_ID)->get();
+            $steps = Step::where('R_ID', '=', $request->R_ID)->get();
             if($steps && count($steps) > 0){
                 return response()->json($steps, 200);
             }else{
@@ -109,6 +191,26 @@ class ReceiptController extends Controller{
             return response()->json($names, 200);
         }else{
             response()->json("Fehler beim Laden der Einheiten.", 500);
+        }
+    }
+
+    public function getAllUnits(){
+        $units = Unit::all();
+
+        if($units){
+            return response()->json($units, 200);
+        }else{
+            response()->json("Es existieren keine Einheiten.", 404);
+        }
+    }
+
+    public function getAllTags(){
+        $tags = Tag::all();
+
+        if($tags){
+            return response()->json($tags, 200);
+        }else{
+            response()->json("Es existieren keine Tags.", 404);
         }
     }
 }

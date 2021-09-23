@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Receipt extends Model{
-    protected $table = 'rezeptdaten';
-    protected $primaryKey = 'R_ID';
+class Step extends Model{
+    protected $table = 'schritte';
+    protected $primaryKey = 'S_ID';
     public $timestamps = false;
 
     /**
@@ -15,7 +15,7 @@ class Receipt extends Model{
      * @var array
      */
     protected $fillable = [
-        'titel', 'portionen', 'kochzeit', 'arbeitszeit', 'ruhezeit'
+        'schritt_nr', 'anweisung'
     ];
  
     /**
@@ -24,7 +24,7 @@ class Receipt extends Model{
      * @var array
      */
     protected $hidden = [
-        'G_ID', 'P_ID'
+        'S_ID', 'R_ID'
     ];
 
     protected $guarded = [];
