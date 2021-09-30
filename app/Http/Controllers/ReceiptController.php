@@ -36,7 +36,7 @@ class ReceiptController extends Controller{
         }
     }
 
-    public function create(Request $request) {
+    public function createReceipt(Request $request) {
         $this->validate($request, [
             'groupId' => 'required',
             'name' => 'required',
@@ -60,7 +60,7 @@ class ReceiptController extends Controller{
             $receipt->ruhezeit = $request->restTime;
 
             $receipt->G_ID = $request->groupId;
-            $receipt->P_ID = $request->Auth::user()->P_ID;
+            $receipt->P_ID = Auth::user()->P_ID;
 
             $time = time();
 
@@ -81,7 +81,7 @@ class ReceiptController extends Controller{
                         $tagReceipt = new ReceiptTag();
 
                         $tagReceipt->R_ID = $createdReceipt->R_ID;
-                        $tagReceipt->R_ID = $tagId;
+                        $tagReceipt->T_ID = $tagId;
 
                         $tagReceipt->save();
                     }
@@ -114,7 +114,7 @@ class ReceiptController extends Controller{
 
                         $ingredient->save();
                     }
-
+                    return response()->json($createdReceipt, 200);
                 }else{
                     $createdReceipt =   Receipt::where('titel', '=', $request->name)
                                         ->where('G_ID', '=', $request->groupId)
