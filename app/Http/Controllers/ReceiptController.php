@@ -86,7 +86,7 @@ class ReceiptController extends Controller{
                         $tagReceipt->save();
                     }
 
-                    $jsonStringSteps = $receipt->steps;
+                    $jsonStringSteps = $request->steps;
 
                     $decodedSteps = json_decode($jsonStringSteps, false);
 
@@ -98,6 +98,21 @@ class ReceiptController extends Controller{
                         $step->anweisung = $decodedStep->instruction;
 
                         $step->save();
+                    }
+
+                    $jsonStringIngredients = $request->ingredients;
+
+                    $decodedIngredients = json_decode($jsonStringIngredients, false);
+
+                    foreach($decodedIngredients as &$decodedIngredient){
+                        $ingredient = new Ingredient();
+
+                        $ingredient->E_ID = $decodedIngredient->unitId;
+                        $ingredient->name = $decodedIngredient->name;
+                        $ingredient->menge = $decodedIngredient->amount;;
+                        $ingredient->R_ID = $createdReceipt->R_ID;
+
+                        $ingredient->save();
                     }
 
                 }else{
