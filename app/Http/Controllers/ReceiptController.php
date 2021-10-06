@@ -137,15 +137,19 @@ class ReceiptController extends Controller{
         ]);
 
         $receipt = Receipt::find($request->R_ID);
-        if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $receipt->G_ID]])->first()){
-            $steps = Step::where('R_ID', '=', $request->R_ID)->get();
-            if($steps && count($steps) > 0){
-                return response()->json($steps, 200);
+        if($receipt){
+            if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $receipt->G_ID]])->first()){
+                $steps = Step::where('R_ID', '=', $request->R_ID)->get();
+                if($steps && count($steps) > 0){
+                    return response()->json($steps, 200);
+                }else{
+                    response()->json("Es existieren keine Schritte zu diesem Rezept.", 404);
+                }
             }else{
-                response()->json("Es existieren keine Schritte zu diesem Rezept.", 404);
+                return response()->json("Unauthorisiert.", 401);
             }
         }else{
-            return response()->json("Unauthorisiert.", 401);
+            return response()->json("Das Rezept existiert nicht.", 404);
         }
     }
 
@@ -155,15 +159,19 @@ class ReceiptController extends Controller{
         ]);
 
         $receipt = Receipt::find($request->R_ID);
-        if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $receipt->G_ID]])->first()){
-            $ingredients = Ingredient::where('R_ID', '=', $request->R_ID)->get();
-            if($ingredients && count($ingredients) > 0){
-                return response()->json($ingredients, 200);
+        if($receipt){
+            if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $receipt->G_ID]])->first()){
+                $ingredients = Ingredient::where('R_ID', '=', $request->R_ID)->get();
+                if($ingredients && count($ingredients) > 0){
+                    return response()->json($ingredients, 200);
+                }else{
+                    response()->json("Es existieren keine Zutaten zu diesem Rezept.", 404);
+                }
             }else{
-                response()->json("Es existieren keine Zutaten zu diesem Rezept.", 404);
+                return response()->json("Unauthorisiert.", 401);
             }
         }else{
-            return response()->json("Unauthorisiert.", 401);
+            return response()->json("Das Rezept existiert nicht.", 404);
         }
     }
 
