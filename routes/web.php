@@ -39,8 +39,9 @@ $router->group(['prefix'=>'api'], function() use($router){
     $router->get('/receipt/unit', 'ReceiptController@getUnitNames');
     $router->get('/unit', 'ReceiptController@getAllUnits');
 
-    $router->get('/files/{path}', 'FilesController@get');
-    $router->post('/files', 'FilesController@upload');
+    /* $router->get('/files/{path}', 'FilesController@get');
+    $router->post('/files', 'FilesController@upload'); */
+    $router->post('receipt/image', 'FilesController@uploadReceiptImages');
 
     $router->get('/tag', 'ReceiptController@getAllTags');
 });

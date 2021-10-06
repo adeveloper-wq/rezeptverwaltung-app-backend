@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Receipt;
+use App\Models\Membership;
 
 class FilesController extends Controller
 {
@@ -49,5 +51,44 @@ class FilesController extends Controller
             //$request->file('image')->move(storage_path('images' . DIRECTORY_SEPARATOR . 'user'), "blbalba.png");
             
         }
+    }
+
+    public function uploadReceiptImages(Request $request){
+        $this->validate($request, [
+            'image' => 'required|array',
+            'image.*' => 'required|distinct|image|mimes:png,jpg,jpeg',
+            'receiptId' => 'required'
+        ]);
+
+        //https://stackoverflow.com/questions/48003164/how-to-upload-multiple-files-using-lumen-multiple-file-upload
+        $receipt = Receipt::find($request->receiptId);
+        if($receipt){
+            if(Membership::where([['P_ID', '=', Auth::user()->P_ID],['G_ID', '=', $receipt->G_ID]])->first()){
+                $file_count = count($request->file('image') );
+                $a=$request->file('image');
+                $finalArray = array();
+                for ($i=0; $i<$file_count; $i++) {
+                    $allowedfileExtension=['jpeg','jpg','png'];
+                    $file = $a[$i];
+                    $extension = $file->getClientOriginalExtension();
+                    $check = in_array($extension, $allowedfileExtension);
+    
+                    if($check){
+                        $name = time() . "-" . uniqid() . "-" . Auth::user()->P_ID . "-" . $receipt->G_ID . "-" . $request->receiptId . "-" . $file->getClientOriginalName();
+                        $file->move(storage_path('images' . DIRECTORY_SEPARATOR . 'receipt' . DIRECTORY_SEPARATOR . $request->receiptId), $name);
+                        $path = storage_path('images' . DIRECTORY_SEPARATOR . 'receipt' . DIRECTORY_SEPARATOR . $request->receiptId) . $name;
+                        $finalArray[$i]['image']="Erfolgreich hochgeladen.";
+                    }else{
+                        return response()->json("Bild " . $i . " ist kein jpeg, jpg oder png.", 400);
+                    }
+                }
+                return response()->json($finalArray, 200);
+            }else{
+                return response()->json("Unauthorisiert.", 401);
+            }
+        }else{
+            return response()->json("Das Rezept existiert nicht.", 404);
+        }
+        
     }
 }
