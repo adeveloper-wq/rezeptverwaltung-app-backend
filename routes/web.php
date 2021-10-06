@@ -42,6 +42,7 @@ $router->group(['prefix'=>'api'], function() use($router){
     /* $router->get('/files/{path}', 'FilesController@get');
     $router->post('/files', 'FilesController@upload'); */
     $router->post('receipt/image', 'FilesController@uploadReceiptImages');
+    $router->get('receipt/image', 'FilesController@getReceiptImages');
 
     $router->get('/tag', 'ReceiptController@getAllTags');
 });
