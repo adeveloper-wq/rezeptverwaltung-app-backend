@@ -15,8 +15,8 @@ class GroupController extends Controller{
 
     public function index(){
         $memberships = Membership::where('P_ID', '=', Auth::user()->P_ID)->get();
-
-        if($memberships){
+        //error_log(print_r($memberships, TRUE)); 
+        if(count($memberships) > 0){
             $groups = array();
             foreach ($memberships as &$membership) {
                 array_push($groups, Group::where('G_ID', '=', $membership->G_ID)->first());
