@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  mysql-server:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: who34zfwo48v3zfvnwo9nw43vzn
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: a4tw34t5gw4hgw4rhw4h6
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+   
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: always
+    environment:
+      PMA_HOST: mysql-server
+      PMA_USER: root
+      PMA_PASSWORD: who34zfwo48v3zfvnwo9nw43vzn
+    ports:
+      - "8080:80"
+volumes:
+  mysql-data:
