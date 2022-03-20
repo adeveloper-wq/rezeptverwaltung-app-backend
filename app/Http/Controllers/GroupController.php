@@ -1,48 +1,54 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Group;
 use App\Models\Membership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-class GroupController extends Controller{
-    public function __construct() {
-        $this->middleware('auth:api');         
+class GroupController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth:api');
     }
 
 
-    public function index(){
+    public function index()
+    {
         $memberships = Membership::where('P_ID', '=', Auth::user()->P_ID)->get();
         //error_log(print_r($memberships, TRUE)); 
-        if(count($memberships) > 0){
+        if (count($memberships) > 0) {
             $groups = array();
             foreach ($memberships as &$membership) {
                 array_push($groups, Group::where('G_ID', '=', $membership->G_ID)->first());
             }
-            if(count($groups) > 0){
+            if (count($groups) > 0) {
                 return response()->json($groups, 200);
-            }else{
+            } else {
                 return response()->json("Fehler beim Laden der Gruppen.", 500);
             }
-        }else{
+        } else {
             return response()->json("Noch keinen Gruppen beigetreten.", 404);
         }
     }
 
-    public function get($name){
+    public function get($name)
+    {
         $name = str_replace('+', ' ', $name);
         $group = Group::where('name', '=', $name)->first();
 
-        if($group){
+        if ($group) {
             return response()->json($group, 200);
-        }else{
+        } else {
             return response()->json("Gruppe existiert nicht.", 404);
         }
     }
 
-    public function create(Request $request){
+    public function create(Request $request)
+    {
         $this->validate($request, [
             'password' => 'required',
             'hinweis' => 'required',
@@ -53,13 +59,13 @@ class GroupController extends Controller{
 
         $HG_Bildpfad = '';
 
-        if($request->HG_Bildpfad){
+        if ($request->HG_Bildpfad) {
             $HG_Bildpfad = $request->HG_Bildpfad;
         }
 
         $menüfarbe = '';
 
-        if($request->menüfarbe){
+        if ($request->menüfarbe) {
             $HG_Bildpfad = $request->menüfarbe;
         }
 
@@ -72,114 +78,122 @@ class GroupController extends Controller{
 
         $checkGroupCreated = $group->save();
 
-        if($checkGroupCreated){
+        if ($checkGroupCreated) {
             $group = Group::where('name', '=', $request->name)
-                            ->where('hinweis', '=', $request->hinweis)
-                            ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
+                ->where('hinweis', '=', $request->hinweis)
+                ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
 
-            if($group->G_ID){
+            if ($group->G_ID) {
                 $membership = new Membership();
 
                 $membership->P_ID    = Auth::user()->P_ID;
                 $membership->G_ID    = $group->G_ID;
-    
+
                 $checkMembership = $membership->save();
 
-                if($checkMembership){
+                if ($checkMembership) {
                     return response()->json("Gruppe erfolgreich erstellt!", 200);
-                }else{
+                } else {
                     $group = Group::where('name', '=', $request->name)
-                                    ->where('hinweis', '=', $request->hinweis)
-                                    ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
+                        ->where('hinweis', '=', $request->hinweis)
+                        ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
                     $group->delete();
                     return response()->json("Gruppe konnte nicht erstellt werden! (Beitritt in neue Gruppe fehlgeschlagen)", 500);
                 }
-            }else{
+            } else {
                 $group = Group::where('name', '=', $request->name)
-                            ->where('hinweis', '=', $request->hinweis)
-                            ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
+                    ->where('hinweis', '=', $request->hinweis)
+                    ->where('admin_P_ID', '=', Auth::user()->P_ID)->first();
                 $group->delete();
                 return response()->json("Gruppe konnte nicht erstellt werden! (Fehler bei Erstellung)", 500);
             }
-        }else{
+        } else {
             return response()->json("Gruppe konnte nicht erstellt werden! (Fehler bei Erstellung)", 500);
         }
     }
 
-    public function update(Request $request, $G_ID){
+    public function update(Request $request, $G_ID)
+    {
         $group = Group::find($G_ID);
 
-        if($group){
-            if(Auth::user()->P_ID == $group->admin_P_ID){
+        if ($group) {
+            if (Auth::user()->P_ID == $group->admin_P_ID) {
                 $this->validate($request, [
                     'hinweis' => 'required'
                 ]);
-    
+
                 $group->hinweis     = $request->hinweis;
-    
+
                 $check = $group->save();
-    
-                if($check){
+
+                if ($check) {
                     return response()->json($group, 200);
-                }else{
+                } else {
                     return response()->json('Aktualisieren der Gruppe fehlgeschlagen', 500);
                 }
-            }else{
+            } else {
                 return response()->json("Nur Admins können die Gruppe bearbeiten.", 401);
             }
-        }else{
+        } else {
             return response()->json("Die Gruppe existiert nicht.", 404);
         }
     }
 
-    public function delete($G_ID){
+    public function delete($G_ID)
+    {
         $group = Group::find($G_ID);
 
-        if($group){
-            if(Auth::user()->P_ID == $group->admin_P_ID){
+        if ($group) {
+            if (Auth::user()->P_ID == $group->admin_P_ID) {
                 $check = $group->delete();
 
                 $memberships = Membership::where('G_ID', '=', $G_ID);
                 $memberships->delete();
-    
-                if($check){
+
+                if ($check) {
                     return response()->json('Gruppe erfolgreich gelöscht!', 200);
-                }else{
+                } else {
                     return response()->json('Löschen der Gruppe fehlgeschlagen!', 500);
                 }
-            }else{
+            } else {
                 return response()->json("Nur Admins können die Gruppe löschen.", 401);
             }
-        }else{
+        } else {
             return response()->json("Die Gruppe existiert nicht.", 404);
         }
     }
 
-    public function join(Request $request){
+    public function join(Request $request)
+    {
         $this->validate($request, [
             'G_ID' => 'required',
             'password' => 'required'
         ]);
 
         $group = Group::find($request->G_ID);
-        if($group){
-            if(Hash::check($request->password, $group->passwort)){
-                $membership = new Membership();
+        if ($group) {
+            $membership = Membership::where([['P_ID', '=', Auth::user()->P_ID], ['G_ID', '=', $request->G_ID]])->first();
+            if ($membership) {
+                return response()->json("Schon beigetreten.", 200);
+            } else {
+                if (Hash::check($request->password, $group->passwort)) {
+                    $membership = new Membership();
 
-                $membership->P_ID    = Auth::user()->P_ID;
-                $membership->G_ID    = $request->G_ID;
+                    $membership->P_ID    = Auth::user()->P_ID;
+                    $membership->G_ID    = $request->G_ID;
 
-                $check = $membership->save();
+                    $check = $membership->save();
 
-                if($check){
-                    return response()->json('Gruppe erfolgreich beigetreten!', 200);
-                }else{
-                    return response()->json('Der Gruppe konnte nicht beigetreten werden!', 500);
+                    if ($check) {
+                        return response()->json('Gruppe erfolgreich beigetreten!', 200);
+                    } else {
+                        return response()->json('Der Gruppe konnte nicht beigetreten werden!', 500);
+                    }
+                } else {
+                    return response()->json("Falsches Passwort.", 401);
                 }
-            }else{
-                return response()->json("Falsches Passwort.", 401);
             }
-        }else{
+        } else {
             return response()->json("Die Gruppe existiert nicht.", 404);
         }
     }
