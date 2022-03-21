@@ -122,7 +122,7 @@ class GroupController extends Controller
                     'hinweis' => 'required'
                 ]);
 
-                $group->hinweis     = $request->hinweis;
+                $group->hinweis = $request->hinweis;
 
                 $check = $group->save();
 
@@ -130,6 +130,38 @@ class GroupController extends Controller
                     return response()->json($group, 200);
                 } else {
                     return response()->json('Aktualisieren der Gruppe fehlgeschlagen', 500);
+                }
+            } else {
+                return response()->json("Nur Admins können die Gruppe bearbeiten.", 401);
+            }
+        } else {
+            return response()->json("Die Gruppe existiert nicht.", 404);
+        }
+    }
+
+    public function updateAdmin(Request $request, $G_ID)
+    {
+        $group = Group::find($G_ID);
+
+        if ($group) {
+            if (Auth::user()->P_ID == $group->admin_P_ID) {
+                $this->validate($request, [
+                    'admin_P_ID' => 'required'
+                ]);
+
+                $membership = Membership::where([['P_ID', '=', $request->admin_P_ID], ['G_ID', '=', $G_ID]])->first();
+                if ($membership) {
+                    $group->admin_P_ID = $request->admin_P_ID;
+
+                    $check = $group->save();
+
+                    if ($check) {
+                        return response()->json('Admin der Gruppe wurde aktualisiert.', 200);
+                    } else {
+                        return response()->json('Aktualisieren des Admins fehlgeschlagen', 500);
+                    }
+                } else {
+                    return response()->json("Fehlgeschlagen! Der neue Admin ist kein Mitglied der Gruppe.", 401);
                 }
             } else {
                 return response()->json("Nur Admins können die Gruppe bearbeiten.", 401);
