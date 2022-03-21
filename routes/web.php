@@ -26,7 +26,8 @@ $router->group(['prefix'=>'api'], function() use($router){
     $router->post('/group', 'GroupController@create');
     $router->put('/group/{G_ID}', 'GroupController@update');
     $router->delete('/group/{G_ID}', 'GroupController@delete');
-    $router->post('/group/join', 'GroupController@join');
+    $router->post('/group/{G_ID}/members', 'GroupController@join');
+    $router->delete('/group/{G_ID}/members', 'GroupController@leave');
 
     $router->get('/receipt', 'ReceiptController@get');
     $router->post('/receipt', 'ReceiptController@createReceipt');

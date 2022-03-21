@@ -163,16 +163,15 @@ class GroupController extends Controller
         }
     }
 
-    public function join(Request $request)
+    public function join(Request $request, $G_ID)
     {
         $this->validate($request, [
-            'G_ID' => 'required',
             'password' => 'required'
         ]);
 
-        $group = Group::find($request->G_ID);
+        $group = Group::find($G_ID);
         if ($group) {
-            $membership = Membership::where([['P_ID', '=', Auth::user()->P_ID], ['G_ID', '=', $request->G_ID]])->first();
+            $membership = Membership::where([['P_ID', '=', Auth::user()->P_ID], ['G_ID', '=', $G_ID]])->first();
             if ($membership) {
                 return response()->json("Schon beigetreten.", 200);
             } else {
@@ -180,7 +179,7 @@ class GroupController extends Controller
                     $membership = new Membership();
 
                     $membership->P_ID    = Auth::user()->P_ID;
-                    $membership->G_ID    = $request->G_ID;
+                    $membership->G_ID    = $G_ID;
 
                     $check = $membership->save();
 
@@ -192,6 +191,31 @@ class GroupController extends Controller
                 } else {
                     return response()->json("Falsches Passwort.", 401);
                 }
+            }
+        } else {
+            return response()->json("Die Gruppe existiert nicht.", 404);
+        }
+    }
+
+    public function leave($G_ID) {
+        /* error_log(print_r($G_ID, TRUE));  */
+        $group = Group::find($G_ID);
+        if ($group) {
+            $membership = Membership::where([['P_ID', '=', Auth::user()->P_ID], ['G_ID', '=', $G_ID]])->first();
+            if ($membership) {
+                if ($group->admin_P_ID == Auth::user()->P_ID){
+                    return response()->json("Gruppe kann als Admin nicht verlassen werden.", 409);
+                }else {
+                    $check = $membership->delete();
+
+                    if ($check) {
+                        return response()->json('Erfolgreich aus der Gruppe ausgetreten.', 200);
+                    } else {
+                        return response()->json('Austreten aus der Gruppe fehlgeschlagen!', 500);
+                    }
+                }
+            } else {
+                return response()->json("Kein Mitglied in der Gruppe.", 404);
             }
         } else {
             return response()->json("Die Gruppe existiert nicht.", 404);
