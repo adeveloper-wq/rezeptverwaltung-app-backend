@@ -35,9 +35,14 @@ class GroupController extends Controller
         }
     }
 
-    public function get($name)
+    public function search(Request $request)
     {
-        $name = str_replace('+', ' ', $name);
+        $this->validate($request, [
+            'name' => 'required'
+        ]);
+
+        $name = $request->name;
+        //$name = str_replace('+', ' ', $name);
         $group = Group::where('name', '=', $name)->first();
 
         if ($group) {

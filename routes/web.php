@@ -22,7 +22,7 @@ $router->group(['prefix'=>'api'], function() use($router){
     $router->get('/items/{id}', 'ItemController@get');
 
     $router->get('/group', 'GroupController@index');
-    $router->get('/group/{name}', 'GroupController@get');
+    $router->get('/group/search', 'GroupController@search');
     $router->post('/group', 'GroupController@create');
     $router->put('/group/{G_ID}', 'GroupController@update');
     $router->put('/group/{G_ID}/admin', 'GroupController@updateAdmin');
