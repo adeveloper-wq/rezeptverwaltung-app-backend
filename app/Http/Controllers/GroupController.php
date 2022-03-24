@@ -234,25 +234,55 @@ class GroupController extends Controller
         }
     }
 
-    public function leave($G_ID) {
-        /* error_log(print_r($G_ID, TRUE));  */
+    public function leave(Request $request, $G_ID)
+    {
         $group = Group::find($G_ID);
         if ($group) {
-            $membership = Membership::where([['P_ID', '=', Auth::user()->P_ID], ['G_ID', '=', $G_ID]])->first();
-            if ($membership) {
-                if ($group->admin_P_ID == Auth::user()->P_ID){
-                    return response()->json("Gruppe kann als Admin nicht verlassen werden.", 409);
-                }else {
-                    $check = $membership->delete();
 
-                    if ($check) {
-                        return response()->json('Erfolgreich aus der Gruppe ausgetreten.', 200);
+            // KICK USER
+            if ($request->P_ID) {
+                $this->validate($request, [
+                    'P_ID' => 'required'
+                ]);
+
+                if($request->P_ID == Auth::user()->P_ID){
+                    return response()->json('Zum eigenen Verlassen der Gruppe die Methode ohne den Body aufrufen.', 400);
+                }else{
+                    if ($group->admin_P_ID == Auth::user()->P_ID) {
+                        $memberships = Membership::where([['P_ID', '=', $request->P_ID], ['G_ID', '=', $G_ID]]);
+                        
+                        if ($memberships) {
+                            $check = $memberships->delete();
+                            if ($check) {
+                                return response()->json('User erfolgreich aus der Gruppe entfernt.', 200);
+                            } else {
+                                return response()->json('Entfernen des Users aus der Gruppe fehlgeschlagen!', 500);
+                            }
+                        } else {
+                            return response()->json("Angegebene User ist kein Mitglied der Gruppe.", 404);
+                        }
                     } else {
-                        return response()->json('Austreten aus der Gruppe fehlgeschlagen!', 500);
+                        return response()->json("Nur Admins können andere User aus der Gruppe entfernen oder sie bannen.", 401);
                     }
                 }
+            // LEAVE GROUP
             } else {
-                return response()->json("Kein Mitglied in der Gruppe.", 404);
+                $memberships = Membership::where([['P_ID', '=', Auth::user()->P_ID], ['G_ID', '=', $G_ID]]);
+                if ($memberships) {
+                    if ($group->admin_P_ID == Auth::user()->P_ID) {
+                        return response()->json("Gruppe kann als Admin nicht verlassen werden.", 409);
+                    } else {
+                        $check = $memberships->delete();
+
+                        if ($check) {
+                            return response()->json('Erfolgreich aus der Gruppe ausgetreten.', 200);
+                        } else {
+                            return response()->json('Austreten aus der Gruppe fehlgeschlagen!', 500);
+                        }
+                    }
+                } else {
+                    return response()->json("Kein Mitglied in der Gruppe.", 404);
+                }
             }
         } else {
             return response()->json("Die Gruppe existiert nicht.", 404);
