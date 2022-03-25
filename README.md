@@ -1,4 +1,4 @@
-# Rezeptverwaltung Backend (Laravel Lumen / PHP / MySQL)
+# Rezeptverwaltung Backend (Laravel Lumen / PHP / MySQL) (work-in-progress)
 Backend of an application for creation and organization of recipes as well as sharing of recipes with friends and family. 
 
 # Local Development
